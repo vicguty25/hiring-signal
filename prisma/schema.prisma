@@ -1,0 +1,90 @@
+// Signal usa Prisma y no Drizzle, a diferencia del resto del portafolio.
+//
+// La razon es el modelo de datos: aqui hay cuatro tablas relacionadas y casi
+// todas las lecturas necesitan traer el arbol entero (rol -> senales ->
+// evaluaciones -> notas). Las relaciones anidadas de Prisma resuelven eso en
+// una llamada legible; con un query builder acaba en varios joins a mano.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Desde Prisma 7 la URL no vive aqui: las migraciones la leen de
+  // prisma.config.ts y el cliente entra por un driver adapter.
+  // Un esquema por producto dentro del proyecto compartido de Supabase.
+  schemas = ["signal"]
+}
+
+/// Un rol abierto. El enlace es la credencial: quien lo tiene, evalua.
+model Rol {
+  id       String @id
+  titulo   String
+  /// Que tiene que estar resuelto en seis meses para decir que salio bien.
+  contexto String @default("")
+
+  /// Lo que este rol NO es. Es el campo que mas entrevistas ahorra.
+  antiRequisitos String @map("anti_requisitos") @default("")
+
+  /// Denominador de la metrica norte: cuantas veces se paso el enlace.
+  vecesCompartido Int @map("veces_compartido") @default(0)
+
+  creadoEn DateTime @map("creado_en") @default(now())
+
+  senales      Senal[]
+  evaluaciones Evaluacion[]
+
+  @@map("roles")
+  @@schema("signal")
+}
+
+/// Una senal a evaluar. Entre tres y seis por rol: mas y nadie las puntua bien.
+model Senal {
+  id     String @id
+  rolId  String @map("rol_id")
+  texto  String
+  /// 1 = esta bien tenerlo, 2 = importa, 3 = sin esto no hay contratacion.
+  peso   Int    @default(2)
+  orden  Int    @default(0)
+
+  rol   Rol    @relation(fields: [rolId], references: [id], onDelete: Cascade)
+  notas Nota[]
+
+  @@index([rolId, orden])
+  @@map("senales")
+  @@schema("signal")
+}
+
+/// Lo que un evaluador concreto opina de un candidato concreto.
+model Evaluacion {
+  id        String @id
+  rolId     String @map("rol_id")
+  candidato String
+  evaluador String
+
+  creadaEn DateTime @map("creada_en") @default(now())
+
+  rol   Rol    @relation(fields: [rolId], references: [id], onDelete: Cascade)
+  notas Nota[]
+
+  @@index([rolId, candidato])
+  @@map("evaluaciones")
+  @@schema("signal")
+}
+
+model Nota {
+  id           String @id
+  evaluacionId String @map("evaluacion_id")
+  senalId      String @map("senal_id")
+  /// 1 a 4. Cuatro niveles y no cinco: sin punto medio hay que mojarse.
+  puntaje      Int
+  comentario   String @default("")
+
+  evaluacion Evaluacion @relation(fields: [evaluacionId], references: [id], onDelete: Cascade)
+  senal      Senal      @relation(fields: [senalId], references: [id], onDelete: Cascade)
+
+  @@unique([evaluacionId, senalId])
+  @@map("notas")
+  @@schema("signal")
+}
