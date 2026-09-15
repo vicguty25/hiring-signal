@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+/*
+  Sistema visual de Signal. Ver docs/brand.md.
+
+  Se usa en mitad de una conversacion incomoda, con la pantalla entre dos
+  socios. Ni alegre ni intimidante: sobrio, y un solo ambar que aparece
+  unicamente donde hay desacuerdo.
+*/
+@theme {
+  --color-pizarra: #0f172a;
+  --color-papel: #f8fafc;
+  --color-tarjeta: #ffffff;
+  --color-ambar: #b45309;
+  --color-ambar-suave: #fef3c7;
+  --color-acero: #334155;
+  --color-linea: #e2e8f0;
+  --color-gris: #64748b;
+
+  --font-sans: var(--font-plex), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+}
+
+html,
+body {
+  background-color: var(--color-papel);
+  color: var(--color-pizarra);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.nota {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.campo {
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-linea);
+  background: var(--color-tarjeta);
+  padding: 0.65rem 0.9rem;
+  font: inherit;
+  outline: none;
+}
+
+.campo:focus {
+  border-color: var(--color-acero);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-acero);
+  outline-offset: 2px;
+}
