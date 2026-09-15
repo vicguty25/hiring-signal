@@ -1,0 +1,17 @@
+node_modules/
+.next/
+out/
+build/
+next-env.d.ts
+*.tsbuildinfo
+
+.env
+.env.*
+!.env.example
+
+AGENTS.md
+CLAUDE.md
+
+.vercel
+.DS_Store
+npm-debug.log*
